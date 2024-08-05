@@ -1,6 +1,7 @@
 chromadb==0.5.5
 datasets==2.20.0
 onnxruntime==1.18.1
+onnx==1.16.2
 optimum==1.21.2
 sentence_transformers==3.0.1
 torch==2.4.0

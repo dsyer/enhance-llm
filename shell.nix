@@ -4,6 +4,7 @@ mkShell {
 
   name = "env";
   buildInputs = [
+    ollama
     python3Packages.python
     python3Packages.venvShellHook
   ];
