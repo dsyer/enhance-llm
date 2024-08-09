@@ -13,8 +13,11 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.testcontainers.chromadb.ChromaDBContainer;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.ollama.OllamaContainer;
 import org.testcontainers.utility.DockerImageName;
+
+import com.example.DemoApplicationTests.TestcontainersConfiguration;
 
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest
@@ -32,34 +35,37 @@ public class DemoApplicationTests {
 		System.err.println(model.embed("Hello, world!"));
 	}
 
-}
+	@TestConfiguration(proxyBeanMethods = false)
+	public static class TestcontainersConfiguration {
 
-@TestConfiguration(proxyBeanMethods = false)
-class TestcontainersConfiguration {
+		private static final Log logger = LogFactory.getLog(TestcontainersConfiguration.class);
 
-	private static final Log logger = LogFactory.getLog(TestcontainersConfiguration.class);
+		@Bean
+		@ServiceConnection
+		public ChromaDBContainer chroma() {
+			return new ChromaDBContainer(DockerImageName.parse("ghcr.io/chroma-core/chroma:0.5.5"));
+		}
 
-	@Bean
-	@ServiceConnection
-	public ChromaDBContainer chroma() {
-		return new ChromaDBContainer(DockerImageName.parse("ghcr.io/chroma-core/chroma:0.5.5"));
+		@Bean
+		@ServiceConnection
+		public OllamaContainer ollama() throws Exception {
+			@SuppressWarnings("resource")
+			OllamaContainer ollama = new OllamaContainer(DockerImageName.parse("ollama/ollama:0.3.2"))
+					// Not recommended strategy from testcontainers, but the only practical way to
+					// make it work locally
+					.withFileSystemBind("ollama", "/root/.ollama", BindMode.READ_WRITE);
+			return ollama;
+		}
+
+		@Bean
+		ApplicationRunner runner(OllamaContainer ollama) {
+			return args -> {
+				logger.info("Pulling models...");
+				ollama.execInContainer("ollama", "pull", "albertogg/multi-qa-minilm-l6-cos-v1");
+				ollama.execInContainer("ollama", "pull", "mistral");
+				logger.info("...done");
+			};
+		}
+
 	}
-
-	@Bean
-	@ServiceConnection
-	public OllamaContainer ollama() throws Exception {
-		OllamaContainer ollama = new OllamaContainer(DockerImageName.parse("ollama/ollama:0.3.2"));
-		return ollama;
-	}
-
-	@Bean
-	ApplicationRunner runner(OllamaContainer ollama) {
-		return args -> {
-			logger.info("Pulling models...");
-			ollama.execInContainer("ollama", "pull", "albertogg/multi-qa-minilm-l6-cos-v1");
-			ollama.execInContainer("ollama", "pull", "mistral");
-			logger.info("...done");
-		};
-	}
-
 }

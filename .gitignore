@@ -2,5 +2,6 @@ offload/
 .vscode/
 .venv/
 target/
+ollama/
 README.py
 onnx-output/
