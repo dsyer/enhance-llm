@@ -22,13 +22,13 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
-    - name: Cache Models
+    - name: Cache LLM Data
       id: cache-models
       uses: actions/cache@v4
       with:
         path: ollama
         key: ${{ runner.os }}-models
-    - name: Deploy with Maven
+    - name: Install with Maven
       run: |
           ./mvnw -B install
 
