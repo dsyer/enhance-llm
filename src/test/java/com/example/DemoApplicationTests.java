@@ -60,7 +60,7 @@ public class DemoApplicationTests {
 		@Bean
 		ApplicationRunner runner(OllamaContainer ollama) {
 			return args -> {
-				logger.info("Pulling models...");
+				logger.info("Pulling models....");
 				ollama.execInContainer("ollama", "pull", "albertogg/multi-qa-minilm-l6-cos-v1");
 				ollama.execInContainer("ollama", "pull", "mistral");
 				ollama.execInContainer("chmod", "go+r", "-R", "/root/.ollama");
